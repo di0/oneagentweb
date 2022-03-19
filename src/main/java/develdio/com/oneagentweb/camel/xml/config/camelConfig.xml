@@ -1,0 +1,61 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<beans xmlns="http://www.springframework.org/schema/beans"
+	xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xmlns:context="http://www.springframework.org/schema/context"
+	xmlns:lang="http://www.springframework.org/schema/lang" xmlns:p="http://www.springframework.org/schema/p"
+	xmlns:util="http://www.springframework.org/schema/util" xmlns:camel="http://camel.apache.org/schema/spring"
+	xmlns:jee="http://www.springframework.org/schema/jee"
+	xsi:schemaLocation="http://www.springframework.org/schema/beans http://www.springframework.org/schema/beans/spring-beans.xsd
+		http://www.springframework.org/schema/context http://www.springframework.org/schema/context/spring-context.xsd
+		http://www.springframework.org/schema/lang http://www.springframework.org/schema/lang/spring-lang.xsd
+		http://www.springframework.org/schema/util http://www.springframework.org/schema/util/spring-util.xsd
+		http://camel.apache.org/schema/spring http://camel.apache.org/schema/spring/camel-spring.xsd
+		http://www.springframework.org/schema/jee http://www.springframework.org/schema/jee/spring-jee-2.0.xsd">
+
+	<camel:camelContext id="oneagentweb">
+		<camel:package>develdio.com.oneagentweb</camel:package>
+		<camel:dataFormats>
+			<camel:jaxb id="myJaxb" prettyPrint="false" contextPath="develdio.com.oneagentweb" encoding="UTF-8" />
+		</camel:dataFormats>
+
+		<!-- ******************************************************************************************************************** -->
+		<!-- DEPLOY -->
+		<camel:route>
+			<camel:from uri="direct:oaw" />
+			<camel:marshal ref="myJaxb" />
+            <camel:to uri="jms:queue:ONE.AGENT.WEB.IN?replyTo=queue:ONE.AGENT.WEB.OUT" />
+			<camel:unmarshal ref="myJaxb" />
+		</camel:route>
+	</camel:camelContext>
+
+	<camel:template id="template" />
+
+	<jee:jndi-lookup id="connectionFactory" resource-ref="true" jndi-name="jms/MQDM" />
+
+	<bean id="jmsConfig" class="org.apache.camel.component.jms.JmsConfiguration">
+		<property name="connectionFactory" ref="connectionFactory" />
+		<property name="concurrentConsumers" value="1" />
+		<property name="maxMessagesPerTask" value="-1" />
+		<property name="useMessageIDAsCorrelationID" value="true" />
+		<property name="deliveryPersistent" value="false" />
+		<property name="requestTimeout" value="120000" />
+		<property name="timeToLive" value="120000" />
+	</bean>
+
+	<bean id="jms" class="org.apache.camel.component.jms.JmsComponent">
+		<property name="configuration" ref="jmsConfig" />
+	</bean>
+
+	<bean id="serviceLocator" class="develdio.com.oneagentweb.servicelocator.ServiceLocator"
+		lazy-init="false">
+	</bean>
+
+	<bean id="templateAbstractDao" class="develdio.com.oneagentweb.dao.TemplateAbstractDAO"
+		lazy-init="false" abstract="true">
+		<property name="template" ref="template" />
+	</bean>
+
+	<bean id="clientDataDao"
+		class="develdio.com.oneagentweb.dao.ClientDataDao"
+		parent="templateAbstractDao" lazy-init="false">
+	</bean>
+</beans>

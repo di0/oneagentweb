@@ -1,0 +1,38 @@
+<?xml version="1.0"?>
+<!DOCTYPE Configure PUBLIC "-//Mort Bay Consulting//DTD Configure//EN" "http://jetty.mortbay.org/configure.dtd">
+
+<Configure id="wac" class="org.mortbay.jetty.webapp.WebAppContext">
+	<Array id="plusConfig" type="java.lang.String">
+		<Item>org.mortbay.jetty.webapp.WebInfConfiguration</Item>
+		<Item>org.mortbay.jetty.plus.webapp.EnvConfiguration</Item>
+		<Item>org.mortbay.jetty.plus.webapp.Configuration</Item>
+		<Item>org.mortbay.jetty.webapp.JettyWebXmlConfiguration</Item>
+		<Item>org.mortbay.jetty.webapp.TagLibConfiguration</Item>
+	</Array>
+
+	<New id="OracleDS" class="org.mortbay.jetty.plus.naming.Resource">
+		<Arg>
+			<Ref id="wac" />
+		</Arg>
+		<Arg>jdbc/FAKEDS</Arg>
+		<Arg>
+			<New class="oracle.jdbc.pool.OracleDataSource">
+				<Set name="URL">jdbc:oracle:thin:@200.200.200.200:1521:FAKEBASE</Set>
+				<Set name="user">foo</Set>
+				<Set name="password">foo123</Set>
+			</New>
+		</Arg>
+	</New>
+
+	<New id="cf" class="org.mortbay.jetty.plus.naming.Resource">
+		<Arg>jms/FAKEMQ</Arg>
+		<Arg>
+			<New class="com.ibm.mq.jms.MQQueueConnectionFactory">
+				<Set name="HostName">200.200.200.200</Set>
+				<Set name="Port">1415</Set>
+				<Set name="TransportType">1</Set>
+				<Set name="QueueManager">FAKE_MQ_QUEUE</Set>
+			</New>
+		</Arg>
+	</New>
+</Configure>
